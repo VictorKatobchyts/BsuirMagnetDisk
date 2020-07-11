@@ -8,7 +8,7 @@ String inputString = "";         // a String to hold incoming data
 char inByte = 0;         // incoming serial byte
 bool stringComplete;
 String ResultString="";
-// Сериал инпут 1
+// Сериал инпут
  
  
 // NeoPixel Ring simple sketch (c) 2013 Shae Erisson
