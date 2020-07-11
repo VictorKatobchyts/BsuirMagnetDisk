@@ -17,7 +17,6 @@ String ResultString="";
 
 #include <Adafruit_NeoPixel.h>
 
-
 // Which pin on the Arduino is connected to the NeoPixels?
 #define PIN 5 // Data pin ws2812
 
