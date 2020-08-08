@@ -29,12 +29,14 @@ volatile bool activate = 0;// След если в течении минуты �
  // Скорость чтение оборотов в сек (герцы)
  unsigned long timingZamerOborotKoleso; // 
  volatile unsigned long timingLightOtchet; // Переменная которая считает время от последнего срабатывания холла для выключения подсветки ws2812
+ volatile unsigned long StopWheelOtchet;// Переменная которая считает время от последнего срабатывания холла для сбрасывания переменных замера первого и второго времени в ноль
  volatile uint32_t count; // Кол-во общее срабатываний
  // Скорость чтение оборотов в сек (герцы)
 
  // Скорость чтение оборотов в сек (герцы)
  void detectsMagnet() {
      timingLightOtchet = millis();// Присваивание времени когда в последний раз крутилось колесо
+     StopWheelOtchet = millis(); // Таймер считает сколько времени не крутилось колесо. Отсюда берётся точка отсчёта
      count++; //Прибавка счётчика пронёсшихся мимо магнитов
      activate=1; // Флаг для ждать мин и погасить
     
@@ -43,23 +45,22 @@ volatile bool activate = 0;// След если в течении минуты �
 // Скорость чтение оборотов в сек (герцы)
 
 void setup() {
-// put your setup code here, to run once:
+    // put your setup code here, to run once:
+    pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+    pixels.setPixelColor(0, pixels.Color(1, 1, 1));  delay(100);
+    pixels.show(); delay(100);
+    Serial.begin(115200);
+    // Скорость чтение оборотов в сек (герцы)
+    pinMode(16, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(16), detectsMagnet, RISING);
+    // Скорость чтение оборотов в сек (герцы)
 
-pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
- pixels.setPixelColor(0, pixels.Color(1, 1, 1));  delay(100);
- pixels.show(); delay(100);
-Serial.begin(115200);
-// Скорость чтение оборотов в сек (герцы)
-pinMode(16, INPUT_PULLDOWN);
-attachInterrupt(digitalPinToInterrupt(16), detectsMagnet, RISING);
-// Скорость чтение оборотов в сек (герцы)
-
-//pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-pinMode(27,OUTPUT); // Red Lamp
-pinMode(26,OUTPUT); // Green Lamp
-pinMode(25,OUTPUT); // Пищалка
-digitalWrite(27, 1);digitalWrite(26, 1);digitalWrite(25, 1); //Выкл все реле
-delay(50);
+    //pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+    pinMode(27,OUTPUT); // Red Lamp
+    pinMode(26,OUTPUT); // Green Lamp
+    pinMode(25,OUTPUT); // Пищалка
+    digitalWrite(27, 1);digitalWrite(26, 1);digitalWrite(25, 1); //Выкл все реле
+    delay(50);
 }
 void SerialInput();
 uint32_t Ftime;
@@ -73,13 +74,15 @@ void loop() {
   if(count%2==0){
     if(step==0){
       Ftime=millis();
-      step=1;PazUnPa=!PazUnPa;
+      step=1;
+      PazUnPa=!PazUnPa;
     }
   }
   else {
     if(step==1){
     Secondtime=millis();
-    step=0;PazUnPa=!PazUnPa;
+    step=0;
+    PazUnPa=!PazUnPa;
     }
   }
   //Затем если число чётное то присвоить 
@@ -88,11 +91,14 @@ void loop() {
 //Serial.print ("Ftime: "); Serial.print( Ftime ); 
 //Serial.print (" Secondtime: "); Serial.print( Secondtime );
 if(PazUnPa==0) {
-Serial.print (" Raznost S-F: "); Serial.print( Secondtime-Ftime );
+  Serial.print (" Raznost S-F: "); Serial.print( Secondtime-Ftime );
 }
 else{
   Serial.print (" Raznost F-S: "); Serial.print( Ftime-Secondtime );
 }
+// Если в течении 5 сек нет изминений то сбросить значение Ftime и Secondtime
+
+
 
 Serial.println();
 // Тут считаем разницу во времени между 2мя соседними срабатываниями
@@ -116,7 +122,16 @@ Serial.println();
          pixels.setPixelColor(0, pixels.Color(0, 0, 0));pixels.show(); // Погасить 
          timingLightOtchet = millis();
         }
-       // timingZamerOborotKoleso=millis();
+        if (millis() - StopWheelOtchet > 5000){ // Если прошло 60сек
+          Ftime=0;
+          Secondtime=0;
+         StopWheelOtchet = millis();
+        }
+
+
+
+
+       // timingZamerOborotKoleso=millis(); 
   //  }
  // Скорость чтение оборотов в сек + ws2812(герцы)
 SerialInput(); 
