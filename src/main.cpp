@@ -1,4 +1,5 @@
 #include <Arduino.h>
+const int8_t LedPin=21;
 // Аларм мод
 bool AlarmMode=1;
 // Аларм мод
@@ -46,14 +47,13 @@ volatile bool activate = 0;// След если в течении минуты �
 
 void setup() {
     // put your setup code here, to run once:
-    pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-    pixels.setPixelColor(0, pixels.Color(1, 1, 1));  delay(100);
-    pixels.show(); delay(100);
+    //pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+    //pixels.setPixelColor(0, pixels.Color(1, 1, 1));  delay(100);
+    //pixels.show(); delay(100);
     Serial.begin(115200);
-    // Скорость чтение оборотов в сек (герцы)
-    pinMode(16, INPUT_PULLDOWN);
-    attachInterrupt(digitalPinToInterrupt(16), detectsMagnet, RISING);
-    // Скорость чтение оборотов в сек (герцы)
+    while(!Serial){
+    }
+    delay(50);
 
     //pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
     pinMode(27,OUTPUT); // Red Lamp
@@ -61,6 +61,16 @@ void setup() {
     pinMode(25,OUTPUT); // Пищалка
     digitalWrite(27, 1);digitalWrite(26, 1);digitalWrite(25, 1); //Выкл все реле
     delay(50);
+    // Подвсетка
+    pinMode(LedPin,OUTPUT);
+    digitalWrite(LedPin,LOW);
+
+    delay(100);
+        // Скорость чтение оборотов в сек (герцы)
+    pinMode(16, INPUT_PULLDOWN);
+    attachInterrupt(digitalPinToInterrupt(16), detectsMagnet, RISING);
+    // Скорость чтение оборотов в сек (герцы)
+    Serial.println(1);  Serial.println(1);  Serial.println(1);  Serial.println(1);  Serial.println(1);  Serial.println(1);
 }
 void SerialInput();
 uint32_t Ftime;
@@ -115,7 +125,8 @@ Serial.println();
        //Serial.println();
        //count=0; 
         if(activate==1){  //Если сработал датчик кода (Есть движения колеса)     
-         pixels.setPixelColor(0, pixels.Color(150, 150, 150));pixels.show(); // Загорется белым
+           //pixels.setPixelColor(0, pixels.Color(150, 150, 150));pixels.show(); // Загорется белым
+           digitalWrite(LedPin,HIGH);
         }
         //else{    
         //timingZamerOborotKoleso = millis(); //Присвоить значение переменной
@@ -123,7 +134,8 @@ Serial.println();
 
         if (millis() - timingLightOtchet > 60000){ // Если прошло 60сек
          activate=0; // Для ждать мин и погасить
-         pixels.setPixelColor(0, pixels.Color(0, 0, 0));pixels.show(); // Погасить 
+         //pixels.setPixelColor(0, pixels.Color(0, 0, 0));pixels.show(); // Погасить 
+         digitalWrite(LedPin,LOW);
          timingLightOtchet = millis();
         }
         if (millis() - StopWheelOtchet > 5000){ // Если прошло 5 сек и колесо не крутится обнулить время срабатывания между 2мя магнитами
