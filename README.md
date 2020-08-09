@@ -9,7 +9,9 @@
 
 Есть баг что при включении значение скорости не равно нулю. Поэтому первую минуту подсветка горит даже если колесо не крутится
 
-Команды управления реле
+Команды управления реле:
+
+
     if(inByte=='g')   {  Serial.println("Green Lamp ON");   digitalWrite( 27, LOW);    }
     if(inByte=='h')   {  Serial.println("Green Lamp Off");   digitalWrite( 27, HIGH);    }
 
