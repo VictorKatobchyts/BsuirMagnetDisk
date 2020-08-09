@@ -85,16 +85,16 @@ void loop() {
     PazUnPa=!PazUnPa;
     }
   }
-  //Затем если число чётное то присвоить 
+  //Затем если число чётное то присвоить StopWheelOtchet
 
 //Serial.print ("Сount magnets: "); Serial.print( count ); 
 //Serial.print ("Ftime: "); Serial.print( Ftime ); 
 //Serial.print (" Secondtime: "); Serial.print( Secondtime );
 if(PazUnPa==0) {
-  Serial.print (" Raznost S-F: "); Serial.print( Secondtime-Ftime );
+  Serial.print (" Raznost S-F: "); Serial.print( Secondtime-Ftime );  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
 }
 else{
-  Serial.print (" Raznost F-S: "); Serial.print( Ftime-Secondtime );
+  Serial.print (" Raznost F-S: "); Serial.print( Ftime-Secondtime );  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
 }
 // Если в течении 5 сек нет изминений то сбросить значение Ftime и Secondtime
 
@@ -122,10 +122,11 @@ Serial.println();
          pixels.setPixelColor(0, pixels.Color(0, 0, 0));pixels.show(); // Погасить 
          timingLightOtchet = millis();
         }
-        if (millis() - StopWheelOtchet > 5000){ // Если прошло 60сек
+        if (millis() - StopWheelOtchet > 5000){ // Если прошло 5 сек и колесо не крутится обнулить время срабатывания между 2мя магнитами
           Ftime=0;
           Secondtime=0;
-         StopWheelOtchet = millis();
+         //StopWheelOtchet = millis();
+         //Serial.println("Badum");
         }
 
 
