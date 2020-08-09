@@ -91,10 +91,14 @@ void loop() {
 //Serial.print ("Ftime: "); Serial.print( Ftime ); 
 //Serial.print (" Secondtime: "); Serial.print( Secondtime );
 if(PazUnPa==0) {
-  Serial.print (" Raznost S-F: "); Serial.print( Secondtime-Ftime );  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
+ // Serial.print (" Raznost S-F: "); 
+  Serial.print( Secondtime-Ftime ); 
+ //  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
 }
 else{
-  Serial.print (" Raznost F-S: "); Serial.print( Ftime-Secondtime );  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
+ // Serial.print (" Raznost F-S: "); 
+  Serial.print( Ftime-Secondtime ); 
+  // Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
 }
 // Если в течении 5 сек нет изминений то сбросить значение Ftime и Secondtime
 
