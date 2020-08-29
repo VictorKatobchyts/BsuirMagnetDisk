@@ -3,8 +3,8 @@ void SerialInput();
 // Для замера времени между проходами магнита
 uint32_t Ftime;
 uint32_t Secondtime;
-bool step=0; // Буль чтоб один раз присваивалось значение времени
-bool PazUnPa=0;
+bool step=0; // Буль чтоб 
+
 unsigned long StopWheelOtchet;// Переменная которая считает время от последнего срабатывания холла для сбрасывания переменных замера первого и второго времени в ноль
 // Для замера времени между проходами магнита
 
@@ -54,15 +54,16 @@ void loop() {
   if (reading != lastButtonState) {
     lastDebounceTime = millis();
   }
-
+  static bool CanSendSerial = false;//Есть ли сигнал от датчика чтоб один раз отправить в монитор порта
   if ((millis() - lastDebounceTime) > debounceDelay) {
     if (reading != buttonState) {
       buttonState = reading;
-      if (buttonState == HIGH) {
+      if (buttonState == LOW) {
         ledState = !ledState;
         count++;
         StopWheelOtchet = millis(); // Таймер считает сколько времени не крутилось колесо. Отсюда берётся точка отсчёта
         activate=1; // Флаг для ждать мин и погасить
+        CanSendSerial=true; // Поднять флаг!
         //Serial.print("count:"); Serial.print(count ); Serial.print(" digitalPinToInterrupt(16):"); Serial.println(digitalRead(16) );
       }
     }
@@ -75,32 +76,44 @@ void loop() {
     if (step == 0) {
       Ftime = millis();
       step = 1;
-      PazUnPa = !PazUnPa;
+
     }
   }
   else {
     if (step == 1) {
       Secondtime = millis();
       step = 0;
-      PazUnPa = !PazUnPa;
+
     }
   }
   //Затем если число чётное то присвоить StopWheelOtchet
-  if (PazUnPa == 0) {
-    // Serial.print (" Raznost S-F: ");
-    Serial.print( Secondtime - Ftime );   //Serial.print( " Count:" ); Serial.print( count );
-    //  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
+  //Serial.print( " Count:" ); Serial.print( count );  Serial.print( " step ");Serial.print( step );Serial.print( "  ");
+  if(count!=0){ //Чтоб при старте не давало скорость в порт
+      if (step == 0) {
+        // Serial.print (" Raznost S-F: ");
+        if(CanSendSerial == true){
+            Serial.println( Secondtime - Ftime ); 
+            CanSendSerial = false;
+        } 
+        //  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
+      }
+      else {
+        // Serial.print (" Raznost F-S: ");
+        if(CanSendSerial == true){
+            Serial.println( Ftime - Secondtime );  
+            CanSendSerial = false;
+        } 
+        // Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
+      }
+      
   }
-  else {
-    // Serial.print (" Raznost F-S: ");
-    Serial.print( Ftime - Secondtime );  //Serial.print( " Count:" ); Serial.print( count );
-    // Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
-  }
-  Serial.println();
+  //Serial.println();
+  /*
   if (millis() - StopWheelOtchet > 5000){ // Если прошло 5 сек и колесо не крутится обнулить время срабатывания между 2мя магнитами
     Ftime=0;
     Secondtime=0;     
   }
+  */
   if(activate==1){  //Если сработал датчик кода (Есть движения колеса)         
       digitalWrite(LedPin,HIGH);// Загорется белым
   }
