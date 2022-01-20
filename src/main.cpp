@@ -1,8 +1,10 @@
 #include <Arduino.h>
+#include<ArduinoJson.h>//установить библиотеку scetch->include library->manage libraries->ArduinoJson
 void SerialInput();
 // Для замера времени между проходами магнита
 uint32_t Ftime;
 uint32_t Secondtime;
+uint32_t timer;
 bool step=0; // Буль чтоб 
 
 unsigned long StopWheelOtchet;// Переменная которая считает время от последнего срабатывания холла для сбрасывания переменных замера первого и второго времени в ноль
@@ -27,12 +29,12 @@ unsigned long timingLightOtchet; // Переменная которая счит
 
 // Сериал инпут
 //String inputString = "";         // a String to hold incoming data
-char inByte = 0;         // incoming serial byte
+         // incoming serial byte
 bool stringComplete;
 String ResultString="";
 // Сериал инпут
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200);//115200
   pinMode(buttonPin, INPUT);
   
     pinMode(27,OUTPUT); // Red Lamp
@@ -48,6 +50,7 @@ void setup() {
 }
 
 void loop() {
+    char inByte = 0;
   //======================= Debounce
   // read the state of the switch into a local variable:
   bool reading = digitalRead(buttonPin);
@@ -92,7 +95,8 @@ void loop() {
       if (step == 0) {
         // Serial.print (" Raznost S-F: ");
         if(CanSendSerial == true){
-            Serial.println( Secondtime - Ftime ); 
+      timer = Secondtime - Ftime;
+      //Serial.println(time); //закомментировал чужой лишний код
             CanSendSerial = false;
         } 
         //  Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
@@ -100,7 +104,8 @@ void loop() {
       else {
         // Serial.print (" Raznost F-S: ");
         if(CanSendSerial == true){
-            Serial.println( Ftime - Secondtime );  
+      timer = Ftime - Secondtime;
+            //Serial.println(time);//закомментировал чужой лишний код
             CanSendSerial = false;
         } 
         // Serial.print (" StopWheelOtchet: "); Serial.print( StopWheelOtchet );
@@ -122,10 +127,10 @@ void loop() {
       digitalWrite(LedPin,LOW);// Погасить 
       timingLightOtchet = millis();
    }
-   SerialInput();
+   SerialInput(inByte);
 }
 
-void SerialInput(){
+void SerialInput(char inByte){
 // Сериал инпут
  if (Serial.available() > 0) {
     // get incoming byte:
@@ -136,14 +141,96 @@ void SerialInput(){
     if (inByte == '\n')    {   stringComplete = true;    }
  }
 
-    if(inByte=='r')  {    digitalWrite( 27, LOW);  }  //Serial.println("Green Lamp ON"); 
-    if(inByte=='t')  {    digitalWrite( 27, HIGH); }   //Serial.println("Green Lamp Off");
+    if(inByte=='r')  {    
+   digitalWrite( 27, LOW);
+   DynamicJsonDocument rjson(1024);
+   rjson["Time"] = timer; 
+   rjson["Color"] = "Red"; 
+   if (digitalRead(25)== 0){
+    rjson["Pisk"] = true;}
+   else {
+    rjson["Pisk"] = false;
+    }
+   serializeJsonPretty(rjson,Serial); 
+   //Serial.println();
+   Serial.flush();
+  }  //Serial.println("Green Lamp ON"); красный вкл по идее(red)
+    if(inByte=='t')  {
+   digitalWrite( 27, HIGH);
+   DynamicJsonDocument tjson(1024);
+   tjson["Time"] = timer; 
+   tjson["Color"] = "None"; 
+   if (digitalRead(25)== 0){
+    tjson["Pisk"] = true;}
+   else {
+    tjson["Pisk"] = false;
+    }
+   serializeJsonPretty(tjson,Serial); 
+   Serial.flush(); 
+  }   //Serial.println("Green Lamp Off");красный выкл по идее(red)
 
-    if(inByte=='g')  {    digitalWrite( 26, LOW);  }    //Serial.println("Red Lamp ON");
-    if(inByte=='h')  {    digitalWrite( 26, HIGH); }   //Serial.println("Red Lamp Off"); 
+    if(inByte=='g')  {
+   digitalWrite( 26, LOW);
+   DynamicJsonDocument gjson(1024);
+   gjson["Time"] = timer; 
+   gjson["Color"] = "Green";
+   if (digitalRead(25)== 0){
+    gjson["Pisk"] = true;}
+   else {
+    gjson["Pisk"] = false;
+    }
+   serializeJsonPretty(gjson,Serial); 
+   Serial.flush();
+  }    //Serial.println("Red Lamp ON"); зеленый вкл (green)
+    if(inByte=='h')  {
+   digitalWrite( 26, HIGH); 
+   DynamicJsonDocument hjson(1024);
+   hjson["Time"] = timer; 
+   hjson["Color"] = "None";
+   if (digitalRead(25)== 0){
+    hjson["Pisk"] = true;}
+   else {
+    hjson["Pisk"] = false;
+    }
+   serializeJsonPretty(hjson,Serial);  
+   Serial.flush();
+  }   //Serial.println("Red Lamp Off"); зеленый выкл (green)
 
-    if(inByte=='p')  {   digitalWrite( 25, LOW) ;  }    //Serial.println("Pisk On");
-    if(inByte=='o')  {   digitalWrite( 25, HIGH);  }    //Serial.println("Pisk Off"); 
+    if(inByte=='p')  {   
+   digitalWrite( 25, LOW) ; 
+   DynamicJsonDocument pjson(1024);
+   pjson["Time"] = timer; 
+   if (digitalRead(25)== 0){
+    pjson["Pisk"] = true;}
+   else {
+    pjson["Pisk"] = false;
+    }
+   serializeJsonPretty(pjson,Serial); 
+   Serial.flush();
+  }    //Serial.println("Pisk On"); пищалка вкл
+    if(inByte=='o')  {
+   digitalWrite( 25, HIGH);
+   DynamicJsonDocument ojson(1024);
+   ojson["Time"] = timer; 
+   if (digitalRead(25)== 0){
+    ojson["Pisk"] = true;}
+   else {
+    ojson["Pisk"] = false;
+    } 
+   serializeJsonPretty(ojson,Serial); 
+   Serial.flush();
+  }//Serial.println("Pisk Off"); 
+    if(inByte=='s')  {
+   DynamicJsonDocument sjson(1024);
+   sjson["Time"] = timer;
+   if (digitalRead(25)== 0){
+    sjson["Pisk"] = true;}
+   else {
+    sjson["Pisk"] = false;
+    }
+   serializeJsonPretty(sjson,Serial); 
+   Serial.flush();
+  }
 // Сериал инпут
 
 
